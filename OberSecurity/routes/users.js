@@ -1,14 +1,13 @@
 const express = require('express');
-const router = express.Router();
 const models = require("../models");
+const router = express.Router();
 
-// 뷰 페이지 응답 GET
+// users(.js)/sign_up 으로 연결됨
 router.get('/sign_up', function(req, res, next) {
-  res.render("user/signup");
+  res.render("user/signup");    // user/signup(.ejs) 렌더링
 });
 
-// 회원가입 버튼을 클릭 했을 때 처리하는 POST
-router.post("/sign_up", function(req,res,next){
+router.post('/sign_up', function(req, res, next) {
   let body = req.body;
 
   models.user.create({
@@ -16,12 +15,14 @@ router.post("/sign_up", function(req,res,next){
     email: body.userEmail,
     password: body.password
   })
-  .then( result => {
-    res.redirect("/users/sign_up");
-  })
-  .catch( err => {
-    console.log(err)
-  })
-})
+    .then( result => {
+      console.log("데이터 추가 완료");
+      res.redirect("/users/sign_up");
+    })
+    .catch( err => {
+      console.log("데이터 추가 실패");
+      console.log(err)
+    })
+});
 
 module.exports = router;
