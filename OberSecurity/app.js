@@ -10,7 +10,7 @@ var usersRouter = require('./routes/users');
 var app = express();
 const models = require("./models/index.js");
 
-// DB 접속 확인 로그
+// DB 연결 확인
 models.sequelize.sync().then( () => {
   console.log(" DB 연결 성공");
 }).catch(err => {

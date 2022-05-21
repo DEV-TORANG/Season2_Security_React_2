@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": "rudnf629843!@",
-    "database": "oberSecurity",
+    "database": "obersecurity",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
