@@ -9,20 +9,19 @@ router.get('/sign_up', function(req, res, next) {
 });
 
 // users(.js)/sign_up 접속시 POST 출력값.
-router.post("/sign_up", function(req,res,next){
-  console.log("DB 되냐");
+router.post("/sign_up", async function(req,res,next){
   let body = req.body;
 
+  // inputPassword(DB에 저장할 값) 을 패스워드와 salt를 합치고
+  // hashPassword에 sha512를 사용하여 제작.
   let inputPassword = body.password;
   let salt = Math.round((new Date().valueOf() * Math.random())) + "";
-  let hashPassword = crypto.createHash("sha512").update(inputPassword + salt).digest("hex");
+  let hashPassword = crypto.createHash("sha512").update(inputPassword + salt).digest("base64");
 
-  console.log("DB 되냐");
-
-  models.user.create({
+  let result = models.user.create({
     name: body.userName,
     email: body.userEmail,
-    password: body.password,
+    password: hashPassword,
     salt: salt
   })
   .then( result => {
@@ -31,7 +30,7 @@ router.post("/sign_up", function(req,res,next){
   })
   .catch( err => {
     console.log("실패");
-    console.log(err)
+    console.log("/users/sign_up");
   })
 })
 // 메인 페이지
@@ -41,7 +40,7 @@ router.get('/', function(req, res, next) {
 
 // 로그인 GET
 router.get('/login', function(req, res, next) {
-  res.render("users/login");
+  res.render("user/login");
 });
 
 // 로그인 POST
@@ -61,11 +60,11 @@ router.post("/login", async function(req,res,next){
 
   if(dbPassword === hashPassword){
       console.log("비밀번호 일치");
-      res.redirect("/user");
+      res.redirect("/users");
   }
   else{
       console.log("비밀번호 불일치");
-      res.redirect("/user/login");
+      res.redirect("/users/login");
   }
 });
 
