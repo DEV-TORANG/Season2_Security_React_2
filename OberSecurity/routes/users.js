@@ -36,6 +36,9 @@ router.post("/sign_up", async function(req,res,next){
 })
 // 메인 페이지
 router.get('/', function(req, res, next) {
+  if(req.cookies){
+    console.log(req.cookies);
+  }
   res.send('환영합니다~');
 });
 
