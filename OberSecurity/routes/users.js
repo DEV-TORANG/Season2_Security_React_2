@@ -1,6 +1,7 @@
 const express = require('express');
 const models = require("../models");
 const crypto = require('crypto');
+const { appendFile } = require('fs');
 const router = express.Router();
 
 // users(.js)/sign_up 접속시 get.
@@ -56,10 +57,15 @@ router.post("/login", async function(req,res,next){
   let dbPassword = result.dataValues.password;
   let inputPassword = body.password;
   let salt = result.dataValues.salt;
-  let hashPassword = crypto.createHash("sha512").update(inputPassword + salt).digest("hex");
+  let hashPassword = crypto.createHash("sha512").update(inputPassword + salt).digest("base64");
 
   if(dbPassword === hashPassword){
       console.log("비밀번호 일치");
+      // 쿠키 설정
+      res.cookie("user", body.userEmail , {
+          expires: new Date(Date.now() + 900000),
+          httpOnly: true
+      });
       res.redirect("/users");
   }
   else{
