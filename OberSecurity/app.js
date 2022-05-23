@@ -9,6 +9,7 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 const models = require("./models/index.js");
+const session = require('express-session');
 
 // DB 연결 확인
 models.sequelize.sync().then( () => {
@@ -35,6 +36,17 @@ app.use('/users', usersRouter);
 app.use(function(req, res, next) {
   next(createError(404));
 });
+
+// 쿠키 저장 및 사용
+app.use(session({
+  key: 'sid',
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    maxAge: 24000 * 60 * 60 // 쿠키 유효기간 24시간
+  }
+}));
 
 // error handler
 app.use(function(err, req, res, next) {
