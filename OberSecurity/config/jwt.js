@@ -1,5 +1,6 @@
 let jwtObj = {};
 
-jwtObj.secret = "apple"
+jwtObj.access = "DoIkNoDaHYe"
+jwtObj.refresh = "IkNOwSSEhouN"
 
 module.exports = jwtObj

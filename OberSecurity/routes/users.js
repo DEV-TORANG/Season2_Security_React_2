@@ -4,6 +4,48 @@ const crypto = require('crypto');
 const { appendFile } = require('fs');
 const router = express.Router();
 
+// access token을 secret key 기반으로 생성
+const generateAccessToken = (id) => {
+  return jwt.sign({
+      id                // generateAccessToken(id)
+    },
+    secretObj.access,   // config/jwt(.js) 내의 access 값
+    {
+      expiresIn: "30m", // 30분만 저장
+  });
+};
+
+// refersh token을 secret key  기반으로 생성
+const generateRefreshToken = (id) => {
+  return jwt.sign({
+      id                // generateRefreshToken(id)
+    },
+    secretObj.refresh,   // config/jwt(.js) 내의 refresh 값
+    {
+      expiresIn: "180 days", // 3달 저장.
+  });
+};
+
+// Access Token 유효성 검사
+const authenticateAccessToken = (req, res) =>{
+  let token = req.cookies.user;
+
+  if(!token){
+    console.log("토큰이 없거나, 토큰 전송이 되지 않았습니다.");
+    res.redirect("/users/login");
+  }
+
+  jwt.verify(token, secretObj.access, (error, user) => {
+    if (error) {
+        console.log("JWT 검증 Error");
+        res.redirect("/error");
+    }
+
+    req.user = user;
+    return 1;
+  });
+};
+
 // users(.js)/sign_up 접속시 get.
 router.get('/sign_up', function(req, res, next) {
   res.render("user/signup");
@@ -57,23 +99,45 @@ router.post("/login", async function(req,res,next){
       }
   });
 
+  let id = req.body.userEmail;
   let dbPassword = result.dataValues.password;
   let inputPassword = body.password;
   let salt = result.dataValues.salt;
   let hashPassword = crypto.createHash("sha512").update(inputPassword + salt).digest("base64");
 
-  if(dbPassword === hashPassword){
-      console.log("비밀번호 일치");
-      // 쿠키 설정
-      res.cookie("user", body.userEmail , {
-          expires: new Date(Date.now() + 900000),
-          httpOnly: true
-      });
-      res.redirect("/users");
+  let checkCookies = authenticateAccessToken(req, res);
+
+  // 쿠키 인증이 되었다면,
+  if( checkCookies == 1 ){
+    res.redirect("/users");
+  }
+
+  // 쿠키 인증이 안됬고, 패스워드로 인증하기.
+  else if(dbPassword === hashPassword){
+    console.log("비밀번호 일치");
+
+    // AccessToken 성공시에 Access 및 Refresh 토큰 발급
+    let AccessToken = generateAccessToken(id);
+    let RefreshToken = generateRefreshToken(id);
+
+    res.json({ AccessToken, RefreshToken });
+
+    // AccessToken 쿠키 저장
+    res.cookie("user", AccessToken , {
+      expires: new Date(Date.now() + 900000),
+      httpOnly: true      // XSS 공격 대처방안.
+    });
+    // RefreshToken 쿠키 저장
+    res.cookie("user", RefreshToken , {
+      expires: new Date(Date.now() + 900000),
+      httpOnly: true      // XSS 공격 대처방안.
+    });
+
+    res.redirect("/users");
   }
   else{
-      console.log("비밀번호 불일치");
-      res.redirect("/users/login");
+    console.log("비밀번호 불일치");
+    res.redirect("/users/login");
   }
 });
 
