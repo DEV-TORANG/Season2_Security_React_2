@@ -35,22 +35,29 @@ const generateRefreshToken = (id) => {
 
 // Access Token 유효성 검사
 const authenticateAccessToken = (req, res) =>{
-  let token = req.cookies.user;
+  let Access = req.cookies.OberUser_Access;
 
-  if(!token){
-    console.log("토큰이 없거나, 토큰 전송이 되지 않았습니다.");
+  if(!Access){
+    console.log("토큰이 없거나, 토큰 전송이 되지 않았거나, 만료되었습니다.");
     return 0;
   }
 
-  jwt.verify(token, secretObj.access, (error, user) => {
+  let decode = jwt.verify(Access, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
     if (error) {
         console.log("JWT 검증 Error");
         res.redirect("/error");
     }
-
-    req.user = user;
-    return 1;
   });
+
+  if(decode){
+    console.log("Access 토큰이 존재합니다.");
+    return 1;
+  }
+  else{
+    console.log("Access 토큰이 없습니다.");
+    return 0;
+  }
+  
 };
 
 // users(.js)/sign_up 접속시 get.
@@ -95,11 +102,22 @@ router.get('/', function(req, res, next) {
 // 로그인 GET
 router.get('/login', function(req, res, next) {
   res.render("user/login");
+  let body = req.body;
+  
+  let Cookies = authenticateAccessToken(req, res);
+
+  if(Cookies == 1){
+    console.log("쿠키에 저장된 토큰 인증 성공");
+  }
+  else{
+    console.log("쿠키에 저장된 토큰 인증 실패");
+  }
 });
 
 // 로그인 POST
 router.post("/login", async function(req,res,next){
   let body = req.body;
+  let checkCookies = authenticateAccessToken(req, res);
 
   let result = await models.user.findOne({
       where: {
@@ -113,17 +131,9 @@ router.post("/login", async function(req,res,next){
   let salt = result.dataValues.salt;
   let hashPassword = crypto.createHash("sha512").update(inputPassword + salt).digest("base64");
 
-  let checkCookies = authenticateAccessToken(req, res);
-
-  // 쿠키 인증이 되었다면,
-  if( checkCookies == 1 ){
-    console.log("토큰 인증되었습니다.");
-    res.redirect("/users");
-  }
 
   // 쿠키 인증이 안됬고, 패스워드로 인증하기.
-  else if(dbPassword === hashPassword){
-    console.log("토큰 인증 불가");
+  if(dbPassword === hashPassword){
     console.log("비밀번호 일치");
     console.log("비밀번호로 토큰 발급합니다...");
 
