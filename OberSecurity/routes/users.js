@@ -1,15 +1,22 @@
+require("dotenv").config();
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const models = require("../models");
 const crypto = require('crypto');
 const { appendFile } = require('fs');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+const bodyParser = require('body-parser');
+const app = express();
+
+router.use(cookieParser());
 
 // access token을 secret key 기반으로 생성
 const generateAccessToken = (id) => {
   return jwt.sign({
       id                // generateAccessToken(id)
     },
-    secretObj.access,   // config/jwt(.js) 내의 access 값
+    process.env.ACCESS_TOKEN_SECRET,   // env 내의 access 값
     {
       expiresIn: "30m", // 30분만 저장
   });
@@ -20,7 +27,7 @@ const generateRefreshToken = (id) => {
   return jwt.sign({
       id                // generateRefreshToken(id)
     },
-    secretObj.refresh,   // config/jwt(.js) 내의 refresh 값
+    process.env.REFRESH_TOKEN_SECRET,   // env 내의 refresh 값
     {
       expiresIn: "180 days", // 3달 저장.
   });
@@ -32,7 +39,7 @@ const authenticateAccessToken = (req, res) =>{
 
   if(!token){
     console.log("토큰이 없거나, 토큰 전송이 되지 않았습니다.");
-    res.redirect("/users/login");
+    return 0;
   }
 
   jwt.verify(token, secretObj.access, (error, user) => {
@@ -76,7 +83,8 @@ router.post("/sign_up", async function(req,res,next){
     console.log("/users/sign_up");
   })
 })
-// 메인 페이지
+
+// 임시 로그인 후 메인 페이지
 router.get('/', function(req, res, next) {
   if(req.cookies){
     console.log(req.cookies);
@@ -109,26 +117,27 @@ router.post("/login", async function(req,res,next){
 
   // 쿠키 인증이 되었다면,
   if( checkCookies == 1 ){
+    console.log("토큰 인증되었습니다.");
     res.redirect("/users");
   }
 
   // 쿠키 인증이 안됬고, 패스워드로 인증하기.
   else if(dbPassword === hashPassword){
+    console.log("토큰 인증 불가");
     console.log("비밀번호 일치");
+    console.log("비밀번호로 토큰 발급합니다...");
 
-    // AccessToken 성공시에 Access 및 Refresh 토큰 발급
+    // 패스워드 인증 성공시에 Access 및 Refresh 토큰 발급
     let AccessToken = generateAccessToken(id);
     let RefreshToken = generateRefreshToken(id);
 
-    res.json({ AccessToken, RefreshToken });
-
     // AccessToken 쿠키 저장
-    res.cookie("user", AccessToken , {
+    res.cookie("OberUser_Access", AccessToken , {
       expires: new Date(Date.now() + 900000),
       httpOnly: true      // XSS 공격 대처방안.
     });
     // RefreshToken 쿠키 저장
-    res.cookie("user", RefreshToken , {
+    res.cookie("OberUser_Refresh", RefreshToken , {
       expires: new Date(Date.now() + 900000),
       httpOnly: true      // XSS 공격 대처방안.
     });
