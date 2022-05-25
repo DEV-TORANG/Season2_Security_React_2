@@ -49,13 +49,13 @@ const authenticateAccessToken = (req, res) =>{
     }
   });
 
-  if(decode){
-    console.log("Access 토큰이 존재합니다.");
-    return 1;
-  }
-  else{
+  if(!decode){
     console.log("Access 토큰이 없습니다.");
     return 0;
+  }
+  else{
+    console.log("Access 토큰이 존재합니다.");
+    return 1;
   }
   
 };
