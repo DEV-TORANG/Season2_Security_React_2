@@ -38,16 +38,10 @@ const authenticateAccessToken = (req, res) =>{
   let Access = req.cookies.OberUser_Access;
 
   if(!Access){
-    console.log("토큰이 없거나, 토큰 전송이 되지 않았거나, 만료되었습니다.");
-    return 0;
+    console.log("Access 토큰이 존재합니다.");
   }
-
-  let decode = jwt.verify(Access, process.env.ACCESS_TOKEN_SECRET, (error, user) => {
-    if (error) {
-        console.log("JWT 검증 Error");
-        res.redirect("/error");
-    }
-  });
+  
+  let decode = jwt.verify(Access, process.env.ACCESS_TOKEN_SECRET);
 
   if(!decode){
     console.log("Access 토큰이 없습니다.");
@@ -57,7 +51,6 @@ const authenticateAccessToken = (req, res) =>{
     console.log("Access 토큰이 존재합니다.");
     return 1;
   }
-  
 };
 
 // users(.js)/sign_up 접속시 get.
@@ -103,11 +96,11 @@ router.get('/', function(req, res, next) {
 router.get('/login', function(req, res, next) {
   res.render("user/login");
   let body = req.body;
-  
   let Cookies = authenticateAccessToken(req, res);
 
   if(Cookies == 1){
     console.log("쿠키에 저장된 토큰 인증 성공");
+    res.redirect("/users");
   }
   else{
     console.log("쿠키에 저장된 토큰 인증 실패");
@@ -117,7 +110,6 @@ router.get('/login', function(req, res, next) {
 // 로그인 POST
 router.post("/login", async function(req,res,next){
   let body = req.body;
-  let checkCookies = authenticateAccessToken(req, res);
 
   let result = await models.user.findOne({
       where: {
