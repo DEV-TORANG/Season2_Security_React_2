@@ -18,9 +18,9 @@ const generateAccessToken = (id) => {
     },
     process.env.ACCESS_TOKEN_SECRET,   // env 내의 access 값
     {
-      expiresIn: "30m", // 30분만 저장
-  });
-};
+      expiresIn: '30m' // 30분만 저장
+  })
+}
 
 // refersh token을 secret key  기반으로 생성
 const generateRefreshToken = (id) => {
@@ -29,9 +29,9 @@ const generateRefreshToken = (id) => {
     },
     process.env.REFRESH_TOKEN_SECRET,   // env 내의 refresh 값
     {
-      expiresIn: "180 days", // 3달 저장.
-  });
-};
+      expiresIn: '180 days' // 3달 저장
+  })
+}
 
 // Access Token 유효성 검사
 const authenticateAccessToken = (req, res) =>{
@@ -40,7 +40,7 @@ const authenticateAccessToken = (req, res) =>{
   if(!Access){
     console.log("Access 토큰이 존재합니다.");
   }
-  
+
   let decode = jwt.verify(Access, process.env.ACCESS_TOKEN_SECRET);
 
   if(!decode){
@@ -73,14 +73,14 @@ router.post("/sign_up", async function(req,res,next){
     email: body.userEmail,
     password: hashPassword,
     salt: salt
-  })
-  .then( result => {
-    console.log("성공");
-    res.redirect("/users/login");
-  })
-  .catch( err => {
-    console.log("실패");
-    console.log("/users/sign_up");
+    })
+    .then( result => {
+      console.log("성공");
+      res.redirect("/users/login");
+    })
+    .catch( err => {
+      console.log("실패");
+      console.log("/users/sign_up");
   })
 })
 
@@ -96,6 +96,12 @@ router.get('/', function(req, res, next) {
 router.get('/login', function(req, res, next) {
   res.render("user/login");
   let body = req.body;
+});
+
+// 로그인 POST
+router.post("/login", async function(req,res,next){
+  let body = req.body;
+
   let Cookies = authenticateAccessToken(req, res);
 
   if(Cookies == 1){
@@ -104,51 +110,45 @@ router.get('/login', function(req, res, next) {
   }
   else{
     console.log("쿠키에 저장된 토큰 인증 실패");
-  }
-});
-
-// 로그인 POST
-router.post("/login", async function(req,res,next){
-  let body = req.body;
-
-  let result = await models.user.findOne({
-      where: {
-          email : body.userEmail
-      }
-  });
-
-  let id = req.body.userEmail;
-  let dbPassword = result.dataValues.password;
-  let inputPassword = body.password;
-  let salt = result.dataValues.salt;
-  let hashPassword = crypto.createHash("sha512").update(inputPassword + salt).digest("base64");
-
-
-  // 쿠키 인증이 안됬고, 패스워드로 인증하기.
-  if(dbPassword === hashPassword){
-    console.log("비밀번호 일치");
-    console.log("비밀번호로 토큰 발급합니다...");
-
-    // 패스워드 인증 성공시에 Access 및 Refresh 토큰 발급
-    let AccessToken = generateAccessToken(id);
-    let RefreshToken = generateRefreshToken(id);
-
-    // AccessToken 쿠키 저장
-    res.cookie("OberUser_Access", AccessToken , {
-      expires: new Date(Date.now() + 900000),
-      httpOnly: true      // XSS 공격 대처방안.
-    });
-    // RefreshToken 쿠키 저장
-    res.cookie("OberUser_Refresh", RefreshToken , {
-      expires: new Date(Date.now() + 900000),
-      httpOnly: true      // XSS 공격 대처방안.
+    let result = await models.user.findOne({
+        where: {
+            email : body.userEmail
+        }
     });
 
-    res.redirect("/users");
-  }
-  else{
-    console.log("비밀번호 불일치");
-    res.redirect("/users/login");
+    let id = req.body.userEmail;
+    let dbPassword = result.dataValues.password;
+    let inputPassword = body.password;
+    let salt = result.dataValues.salt;
+    let hashPassword = crypto.createHash("sha512").update(inputPassword + salt).digest("base64");
+
+
+    // 쿠키 인증이 안됬고, 패스워드로 인증하기.
+    if(dbPassword === hashPassword){
+      console.log("비밀번호 일치");
+      console.log("비밀번호로 토큰 발급합니다...");
+
+      // 패스워드 인증 성공시에 Access 및 Refresh 토큰 발급
+      let AccessToken = generateAccessToken(id);
+      let RefreshToken = generateRefreshToken(id);
+
+      // AccessToken 쿠키 저장
+      res.cookie("OberUser_Access", AccessToken , {
+        expires: new Date(Date.now() + 900000),
+        httpOnly: true      // XSS 공격 대처방안.
+      });
+      // RefreshToken 쿠키 저장
+      res.cookie("OberUser_Refresh", RefreshToken , {
+        expires: new Date(Date.now() + 900000),
+        httpOnly: true      // XSS 공격 대처방안.
+      });
+
+      res.redirect("/users");
+    }
+    else{
+      console.log("비밀번호 불일치");
+      res.redirect("/users/login");
+    }
   }
 });
 
