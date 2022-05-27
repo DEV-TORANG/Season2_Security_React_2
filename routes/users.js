@@ -34,11 +34,28 @@ const generateRefreshToken = (id) => {
 }
 
 // Access Token 유효성 검사
+const f_authenticateAccessToken = (req, res) =>{
+  let Access = req.cookies.OberUser_Access;
+
+  if(!Access){
+    console.log("Access 토큰이 없습니다.");
+    res.redirect("/users/login");
+  }
+
+  let decode = jwt.verify(Access, process.env.ACCESS_TOKEN_SECRET);
+
+  if(decode){
+    console.log("Access 토큰이 존재합니다.");
+    res.redirect("/users");
+  }
+};
+
+// Access Token 유효성 검사
 const authenticateAccessToken = (req, res) =>{
   let Access = req.cookies.OberUser_Access;
 
   if(!Access){
-    console.log("Access 토큰이 존재합니다.");
+    console.log("Access 토큰이 없습니다.");
   }
 
   let decode = jwt.verify(Access, process.env.ACCESS_TOKEN_SECRET);
@@ -53,6 +70,7 @@ const authenticateAccessToken = (req, res) =>{
   }
 };
 
+//###############################################################################
 // users(.js)/sign_up 접속시 get.
 router.get('/sign_up', function(req, res, next) {
   res.render("user/signup");
@@ -84,6 +102,7 @@ router.post("/sign_up", async function(req,res,next){
   })
 })
 
+//###############################################################################
 // 임시 로그인 후 메인 페이지
 router.get('/', function(req, res, next) {
   if(req.cookies){
@@ -92,6 +111,19 @@ router.get('/', function(req, res, next) {
   res.send('환영합니다~');
 });
 
+//###############################################################################
+// 로그인 JWT 테스트 페이지 GET
+router.get('/f_login', function(req, res, next) {
+  res.render("user/f_login");
+})
+
+// 로그인 JWT 테스트 페이지 POST
+router.post('/f_login', function(req, res, next) {
+  f_authenticateAccessToken(req, res);
+});
+
+
+//###############################################################################
 // 로그인 GET
 router.get('/login', function(req, res, next) {
   res.render("user/login");
@@ -102,14 +134,6 @@ router.get('/login', function(req, res, next) {
 router.post("/login", async function(req,res,next){
   let body = req.body;
 
-  let Cookies = authenticateAccessToken(req, res);
-
-  if(Cookies == 1){
-    console.log("쿠키에 저장된 토큰 인증 성공");
-    res.redirect("/users");
-  }
-  else{
-    console.log("쿠키에 저장된 토큰 인증 실패");
     let result = await models.user.findOne({
         where: {
             email : body.userEmail
@@ -149,7 +173,6 @@ router.post("/login", async function(req,res,next){
       console.log("비밀번호 불일치");
       res.redirect("/users/login");
     }
-  }
 });
 
 module.exports = router;
