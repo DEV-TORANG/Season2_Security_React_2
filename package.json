@@ -1,23 +1,19 @@
 {
-  "name": "obersecurity",
-  "version": "0.0.0",
-  "private": true,
+  "name": "season2_security",
+  "version": "1.0.0",
+  "description": "Hello,",
+  "main": "index.js",
   "scripts": {
-    "start": "node ./bin/www"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
-    "body-parser": "^1.20.0",
-    "cookie-parser": "~1.4.4",
-    "cookieparser": "^0.1.0",
-    "debug": "~2.6.9",
-    "dotenv": "^16.0.1",
-    "ejs": "~2.6.1",
-    "express": "~4.16.1",
-    "express-session": "^1.17.3",
-    "http-errors": "~1.6.3",
-    "jsonwebtoken": "^8.5.1",
-    "morgan": "~1.9.1",
-    "mysql2": "^2.3.3",
-    "sequelize": "^6.19.2"
-  }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JHKkmu/Season2_Security.git"
+  },
+  "author": "JHKkmu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JHKkmu/Season2_Security/issues"
+  },
+  "homepage": "https://github.com/JHKkmu/Season2_Security#readme"
 }
