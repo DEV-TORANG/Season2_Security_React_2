@@ -5,3 +5,4 @@ Test for Keimyung University
 《 Oberspace 》's Security Part
 
 main :: https://github.com/naringles/oberspace
+node로만 구성되어 있는 자동 로그인 :: https://github.com/JHKkmu/Season2_Security_NODE
