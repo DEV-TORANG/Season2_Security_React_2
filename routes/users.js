@@ -61,7 +61,7 @@ const f_authenticateToken = (req, res) =>{
 
       // AccessToken 쿠키 저장
       res.cookie("OberUser_Access", AccessToken , {
-        expires: new Date(Date.now() + 900000),
+        expires: new Date(Date.now() + 10800000),    // 3시간 저장
         httpOnly: true      // XSS 공격 대처방안.
       });
       // 하나라도 토큰이 없을때 발급 완료
@@ -80,7 +80,7 @@ const f_authenticateToken = (req, res) =>{
 
     // RefreshToken 쿠키 저장
     res.cookie("OberUser_Refresh", RefreshToken , {
-      expires: new Date(Date.now() + 900000),
+      expires: new Date(Date.now() + 5184000000), // 3달 저장
       httpOnly: true      // XSS 공격 대처방안.
     });
     
@@ -189,12 +189,12 @@ router.post("/login", async function(req,res,next){
 
       // AccessToken 쿠키 저장
       res.cookie("OberUser_Access", AccessToken , {
-        expires: new Date(Date.now() + 900000),
+        expires: new Date(Date.now() + 1800000),    // 30분 저장
         httpOnly: true      // XSS 공격 대처방안.
       });
       // RefreshToken 쿠키 저장
       res.cookie("OberUser_Refresh", RefreshToken , {
-        expires: new Date(Date.now() + 900000),
+        expires: new Date(Date.now() + 5184000000), // 3달 저장
         httpOnly: true      // XSS 공격 대처방안.
       });
 
