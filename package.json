@@ -1,5 +1,5 @@
 {
-  "name": "season2_security",
+  "name": "season2_security_react",
   "version": "1.0.0",
   "description": "Hello,",
   "main": "index.js",
@@ -8,12 +8,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JHKkmu/Season2_Security.git"
+    "url": "git+https://github.com/JHKkmu/Season2_Security_React.git"
   },
   "author": "JHKkmu",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/JHKkmu/Season2_Security/issues"
+    "url": "https://github.com/JHKkmu/Season2_Security_React/issues"
   },
-  "homepage": "https://github.com/JHKkmu/Season2_Security#readme"
+  "homepage": "https://github.com/JHKkmu/Season2_Security_React#readme"
 }
