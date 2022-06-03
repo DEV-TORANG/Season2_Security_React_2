@@ -25,7 +25,6 @@ const userSchema = mongoose.Schema( {   // 스키마 세팅
     type: Number, 
     default: 0
   },
-  image: String,
   token: {                     // 토큰 설정 (나중에 유효성 관리 가능)
     type: String
   },
@@ -76,5 +75,32 @@ userSchema.methods.generateToken = function(cb) {
   })
 }
 
+// 토큰 찾기.
+userSchema.statics.findByToken = function(token, cb) { // jsonwebtoken usage
+  var user = this;
+  //토큰을 decode
+  jwt.verify(token, 'secretToken', function(err, decoded) {
+    //유저 아이디를 이용해서 유저를 찾은 다음에
+    //클라이언트에서 가져온 token과 DB에 보관된 토큰이 일치하는지 확인
+    user.findOne({"_id": decoded, "token": token}, function (err, user) {
+      if (err) return cb(err);
+      cb(null, user)
+    })
+  })    
+}
+
+// 로그아웃
+userSchema.statics.findByToken = function(token, cb) { // jsonwebtoken usage
+  var user = this;
+  //토큰을 decode
+  jwt.verify(token, 'secretToken', function(err, decoded) {
+    //유저 아이디를 이용해서 유저를 찾은 다음에
+    //클라이언트에서 가져온 token과 DB에 보관된 토큰이 일치하는지 확인
+    user.findOne({"_id": decoded, "token": token}, function (err, user) {
+      if (err) return cb(err);
+      cb(null, user)
+    })
+  })    
+}
 const User = mongoose.model('testUser', userSchema)  // 저장될 모델 이름
 module.exports = { User }                        // export

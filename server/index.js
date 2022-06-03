@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')// 클라-서버 정보 교환을 위�
 const {User} = require('./models/user') // 스키마 모델 불러오기
 const mongoose = require('mongoose')    // MongoDB 연동
 const config = require('./config/key')  // MongoDB 아이디/비밀번호 저장된 파일 불러오기
+const {auth} = require("./middleware/auth") // 쿠키로 토큰 인증을 위한 방식
 const cookieParser = require('cookie-parser')
 app.use(cookieParser());                // 쿠키 저장을 위한 쿠키 파서 모듈 사용
 
@@ -58,6 +59,31 @@ app.post('/login',(req,res) => {
 	})
 })
 
+// 미들웨어 auth를 참조하여 인증.
+app.get('/api/users/auth', auth, (req, res) => {  // 미들웨어 (엔드포인트에 req받기 전에 중간에서 별도로 해주는 것)
+  // 여기까지 왔다는 얘기는 Authentication이 true라는 말
+  res.status(200).json({
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true, // 0이면 일반유저
+    isAuth: true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role
+  })
+})
+
+// 로그아웃을 위한 라우팅
+app.get('/api/users/logout', auth, (req, res) => {
+  User.findOneAndUpdate({ _id: req.user._id},
+    { token: ""},
+    (err, user) => {
+      if(err) return res.json({success: false, err});
+      return res.status(200).send({
+        success: true
+      })
+    })
+})
 
 // 기본 화면
 app.get('/', (req, res) => {
