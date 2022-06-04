@@ -1,9 +1,15 @@
 {
   "scripts": {
-    "start": "node ./server/index.js"
+    "backend": "nodemon server/index.js",
+    "start": "concurrently \"npm run backend\" \"npm run start --prefix client\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "concurrently": "^7.2.1",
     "express": "^4.18.1",
     "mongoose": "^6.3.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.16"
   }
 }
